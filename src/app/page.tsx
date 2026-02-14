@@ -1,15 +1,19 @@
-"use client";
+// "use client";
 
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
+import { requireAuth } from "@/lib/auth-utils";
 
-const page = () => {
-  const { data } = authClient.useSession();
+// import { Button } from "@/components/ui/button";
+// import { authClient } from "@/lib/auth-client";
+
+const page = async() => {
+  // const { data } = authClient.useSession();
+  await requireAuth();
 
   return (
     <div>
-      ({JSON.stringify(data)})
-      {data && <Button onClick={() => authClient.signOut()}>Logout</Button>}
+      {/* ({JSON.stringify(data)})
+      {data && <Button onClick={() => authClient.signOut()}>Logout</Button>} */}
+      Protected server component
     </div>
   );
 };
