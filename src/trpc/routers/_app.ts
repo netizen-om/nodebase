@@ -7,13 +7,24 @@ export const appRouter = createTRPCRouter({
 
     console.log("User ID : ", ctx.auth.user.id);
     
-
     return await prisma.user.findMany({
       where : {
         id : ctx.auth.user.id
       }
     });
   }),
+
+  getWorkflows: protectedProcedure.query(async({ ctx }) => {
+    return await prisma.workflow.findMany();
+  }),
+
+  createWorkflow : protectedProcedure.mutation(async() => {
+    return await prisma.workflow.create({
+      data : {
+        name : "test-workflow"
+      },
+    })
+  })
 });
 
 // export type definition of API
