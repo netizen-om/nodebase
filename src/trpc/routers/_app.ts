@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "../init";
 import prisma from "@/lib/db";
+import { inngest } from "@/inngest/client";
 
 export const appRouter = createTRPCRouter({
   getUsers: protectedProcedure.query(async ( {ctx} ) => {
@@ -19,11 +20,15 @@ export const appRouter = createTRPCRouter({
   }),
 
   createWorkflow : protectedProcedure.mutation(async() => {
-    return await prisma.workflow.create({
+
+    await inngest.send({
+      name : "test/hello.world",
       data : {
-        name : "test-workflow"
-      },
+        email : "Hellopajji@gmail.com"
+      }
     })
+
+    return { success : true }
   })
 });
 
