@@ -22,7 +22,6 @@ SidebarMenu,
 SidebarMenuButton,
 SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { title } from 'process';
 import { authClient } from '@/lib/auth-client';
 
 const menuItems = [
@@ -101,7 +100,7 @@ const AppSidebar = () => {
                     <SidebarMenuButton
                         tooltip={"Upgrade to Pro"}
                         className='gap-x-4 h-10 px-4'
-                        onClick={() => {}}
+                        onClick={() => { authClient.checkout({ slug : "pro" }) }}
                     >
                         <StarIcon className='h-4 w-4' />
                         <span>Upgrade to Pro</span>
