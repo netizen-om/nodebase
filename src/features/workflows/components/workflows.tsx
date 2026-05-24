@@ -3,7 +3,6 @@
 import { useCreateWorkflow, useSuspenseWorkflows } from "../hooks/use-workflows"
 import { EntityContainer, EntityHeader } from "@/components/entity-components";
 import { useUpgradeModel } from "@/hooks/use-upgrade-model";
-import { router } from "better-auth/api";
 import { useRouter } from "next/navigation";
 
 export const WorkflowsList = () => {
