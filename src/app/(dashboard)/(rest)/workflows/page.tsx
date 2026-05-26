@@ -7,21 +7,21 @@ import type { SearchParams } from 'nuqs';
 import React, { Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary';
 
-type Props = {  
-  searchParams : Promise<SearchParams>
+type Props = {
+  searchParams: Promise<SearchParams>
 }
 
-const Page = async ( { searchParams } : Props ) => {
+const Page = async ({ searchParams }: Props) => {
 
   await requireAuth();
 
   const params = await workflowsParamsLoader(searchParams)
-  
+
   prefetchlWorkflows(params);
 
   return (
-    <WorkflowsContainer>
-      <div>
+    <div className='h-full'>
+      <WorkflowsContainer>
         <HydrateClient>
           <ErrorBoundary fallback={<WorkflowsError />}>
             <Suspense fallback={<WorkflowsLoading />}>
@@ -29,8 +29,8 @@ const Page = async ( { searchParams } : Props ) => {
             </Suspense>
           </ErrorBoundary>
         </HydrateClient>
-      </div>
-    </WorkflowsContainer>
+      </WorkflowsContainer>
+    </div>
   )
 }
 
