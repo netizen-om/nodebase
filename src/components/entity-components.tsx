@@ -1,7 +1,15 @@
-import { PlusIcon, SearchIcon } from "lucide-react";
+import { AlertTriangleIcon, Loader2Icon, PackageOpenIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { Input } from "./ui/input";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 
 type EntityHeaderProps = {
     title: string;
@@ -120,7 +128,7 @@ export const EntityPagination = ({
     totalPages,
     onPageChange,
     disabled,
-}: EntityPaginationProps) => { 
+}: EntityPaginationProps) => {
     return (
         <div className="flex items-center justify-between gap-x-2 w-full">
             <div className="flex-1 text-sm text-muted-foreground">
@@ -139,7 +147,7 @@ export const EntityPagination = ({
                     disabled={page === totalPages || totalPages === 0 || disabled}
                     variant={"outline"}
                     size="sm"
-                    onClick={() => { onPageChange(Math.min(totalPages, page+1)) }}
+                    onClick={() => { onPageChange(Math.min(totalPages, page + 1)) }}
                 >
                     Next
                 </Button>
@@ -147,3 +155,70 @@ export const EntityPagination = ({
         </div>
     )
 };
+
+interface StateViewProps {
+    message?: string;   
+}
+
+
+export const LoadingView = (
+    { message } : StateViewProps
+) => {
+    return (
+        <div className="flex justify-center items-center h-full flex-1 flex-col gap-y-4">
+            <Loader2Icon className="size-6 animate-spin text-primary" />
+            {!!message && (
+                <p className="text-sm text-muted-foreground">
+                    { message }
+                </p>
+            )}
+        </div>
+    )
+}
+
+export const ErrorView = (
+    { message } : StateViewProps
+) => {
+    return (
+        <div className="flex justify-center items-center h-full flex-1 flex-col gap-y-4">
+            <AlertTriangleIcon className="size-10 text-primary" />
+            {!!message && (
+                <p className="text-sm text-muted-foreground">
+                    { message }
+                </p>
+            )}
+        </div>
+    )
+}
+
+interface EntityViewProps extends StateViewProps {
+    onNew ?: () => void;
+}
+
+export const EmptyView = (
+    { message, onNew } : EntityViewProps
+) => {
+    return (
+        <Empty className="border border-dashed bg-white">
+            <EmptyHeader>
+                <EmptyMedia variant={"icon"}>
+                    <PackageOpenIcon />
+                </EmptyMedia>
+            </EmptyHeader>
+            <EmptyTitle>
+                No Items
+            </EmptyTitle>
+            {!!message && (
+                <EmptyDescription>
+                    {message}
+                </EmptyDescription>
+            )}
+
+            {!!onNew && (
+                <Button onClick={onNew}>
+                    Add Item
+                </Button>
+            )}
+        </Empty>
+    )
+}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useCreateWorkflow, useSuspenseWorkflows } from "../hooks/use-workflows"
-import { EntityContainer, EntityHeader, EntityPagination, EntitySearch } from "@/components/entity-components";
+import { EmptyView, EntityContainer, EntityHeader, EntityPagination, EntitySearch, ErrorView, LoadingView } from "@/components/entity-components";
 import { useUpgradeModel } from "@/hooks/use-upgrade-model";
 import { useRouter } from "next/navigation";
 import { useWorkflowParams } from "../hooks/use-workflows-params";
@@ -26,7 +26,14 @@ export const WorkflowsSearch = () => {
 }
 
 export const WorkflowsList = () => {
+
     const workflows = useSuspenseWorkflows();
+
+    if(workflows.data.items.length === 0) {
+        return (
+            <WorkflowsEmpty />
+        )
+    }
 
     return (
         <div className="flex-1 flex justify-center items-center">
@@ -101,6 +108,40 @@ export const WorkflowsContainer = (
 
                 {children}
             </EntityContainer>
+        </>
+    )
+}
+
+export const WorkflowsLoading = () => {
+    return <LoadingView message="Loading workflows..." />
+}
+
+export const WorkflowsError = () => {
+    return <ErrorView message="Error loading workflows" />
+}
+
+
+
+export const WorkflowsEmpty = () => {
+
+    const createWorkflow = useCreateWorkflow();
+    const { handleError, model } = useUpgradeModel()
+
+    const handleCreate = () => {
+        createWorkflow.mutate(undefined, {
+            onError : (err) => {
+                handleError(err)
+            }
+        })
+    }
+
+    return (
+        <>
+            {model}
+            <EmptyView 
+                message="No workflows found. Get started by creating a workflow"
+                onNew={handleCreate}
+            />
         </>
     )
 }
