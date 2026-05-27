@@ -1,11 +1,14 @@
 "use client"
 
-import { useCreateWorkflow, useSuspenseWorkflows } from "../hooks/use-workflows"
-import { EmptyView, EntityContainer, EntityHeader, EntityList, EntityPagination, EntitySearch, ErrorView, LoadingView } from "@/components/entity-components";
+import { useCreateWorkflow, useRemoveWorkflow, useSuspenseWorkflows } from "../hooks/use-workflows"
+import { EmptyView, EntityContainer, EntityHeader, EntityItem, EntityList, EntityPagination, EntitySearch, ErrorView, LoadingView } from "@/components/entity-components";
 import { useUpgradeModel } from "@/hooks/use-upgrade-model";
 import { useRouter } from "next/navigation";
 import { useWorkflowParams } from "../hooks/use-workflows-params";
 import { useEntitySearch } from "@/hooks/use-entity-search";
+import { formatDistanceToNow } from "date-fns";
+import type { workflow } from "@/generated/prisma/client";
+import { WorkflowIcon } from "lucide-react";
 
 export const WorkflowsSearch = () => {
 
@@ -33,7 +36,7 @@ export const WorkflowsList = () => {
         <EntityList 
             items={workflows.data.items}
             getKey={(workflow) => workflow.id}
-            renderItem={(workflow) => <p>{workflow.name}</p>}
+            renderItem={(workflow) => <WorkflowItem data={workflow} /> }
             emptyView={<WorkflowsEmpty />}
         />
     )
@@ -144,5 +147,40 @@ export const WorkflowsEmpty = () => {
                 onNew={handleCreate}
             />
         </>
+    )
+}
+
+export const WorkflowItem = (
+    { data } : {data : workflow}
+) => {
+
+    const removeWorkflow = useRemoveWorkflow();
+
+    const handleRomve = () => {
+        removeWorkflow.mutate({
+            id : data.id
+        })
+    }   
+
+    return (
+        <EntityItem 
+            href={`/workflows/${data.id}`}
+            title={data.name}
+            subtitle={
+                <>
+                    Updated {formatDistanceToNow(data.updatedAt, { addSuffix:true })}{" "}
+                    &bull; 
+                    Created {formatDistanceToNow(data.createdAt, { addSuffix:true })}{" "}
+                    
+                </>
+            }
+            image={
+                <div className="size-8 flex justify-center items-center">
+                    <WorkflowIcon className="size-5 text-muted-foreground" />
+                </div>
+            }
+            onRemove={handleRomve}
+            isRemoving={removeWorkflow.isPending}
+        />
     )
 }
