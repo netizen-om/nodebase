@@ -54,7 +54,7 @@ export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
             setIsEditing(false);
             return;
         }
-
+        
         try {
             await updateWorkflowName.mutateAsync({
                 id: workflowId,
