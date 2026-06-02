@@ -22,6 +22,8 @@ import {
 import { useSuspenseWorkflow } from "@/features/workflows/hooks/use-workflows"
 import { nodeComponents } from "@/config/node-components";
 import { AddNodeButton } from "./add-node-button";
+import { useSetAtom } from "jotai";
+import { editorAtom } from "../store/atmos";
 
 export const EditorLoading = () => {
     return <LoadingView message="Loading editor..." />
@@ -34,6 +36,9 @@ export const EditorError = () => {
 export const Editor = (
     { workflowId }: { workflowId: string }
 ) => {
+
+    const setEditor = useSetAtom(editorAtom);
+
     const { data: workflow } = useSuspenseWorkflow(workflowId);
 
     const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
@@ -76,6 +81,7 @@ export const Editor = (
                 proOptions={{
                     hideAttribution: true
                 }}
+                onInit={setEditor}
             >
                 <Background />
                 <Controls />

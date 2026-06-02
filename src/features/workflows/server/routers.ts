@@ -3,21 +3,21 @@ import { NodeType } from "@/generated/prisma/enums";
 // import { Node } from "@/generated/prisma/client";
 import prisma from "@/lib/db";
 import { createTRPCRouter, premiumProcedure, protectedProcedure } from "@/trpc/init";
-import { Edge, Node } from "@xyflow/react";
+import { Edge, Node, Position } from "@xyflow/react";
 import { generateSlug } from "random-word-slugs"
-import z from "zod";
+import z, { string } from "zod";
 
 export const workflowsRouter = createTRPCRouter({
     create: premiumProcedure.mutation(({ ctx }) => {
         return prisma.workflow.create({
             data: {
                 name: generateSlug(3),
-                userId : ctx.auth.user.id,
-                nodes : {
-                    create : {
-                        type : NodeType.INITIAL,
-                        position : { x : 0, y: 0 },
-                        name : NodeType.INITIAL,
+                userId: ctx.auth.user.id,
+                nodes: {
+                    create: {
+                        type: NodeType.INITIAL,
+                        position: { x: 0, y: 0 },
+                        name: NodeType.INITIAL,
                     }
                 },
             }
@@ -47,31 +47,103 @@ export const workflowsRouter = createTRPCRouter({
                 }
             })
         }),
+    update: protectedProcedure
+        .input(
+            z.object({
+                id: z.string(),
+                nodes: z.array(
+                    z.object({
+                        id: z.string(),
+                        type: z.string().nullish(),
+                        position: z.object({ x: z.number(), y: z.number() }),
+                        data: z.record(z.string(), z.any()).optional(),
+                    })
+                ),
+                edges: z.array(
+                    z.object({
+                        source: z.string(),
+                        target: z.string(),
+                        sourceHandle: z.string().nullish(),
+                        targetHandle: z.string().nullish(),
+                    })
+                )
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+
+            const { id, nodes, edges } = input
+
+            const workflow = await prisma.workflow.findUniqueOrThrow({
+                where: {
+                    id,
+                    userId: ctx.auth.user.id
+                }
+            })
+
+            //transaction to ensure consistency
+            return await prisma.$transaction(async (tx) => {
+                //Delete all exesisiting nodes and connections
+                await tx.node.deleteMany({
+                    where: { workflowId: id }
+                })
+
+                // Create new nodes
+                await tx.node.createMany({
+                    data: nodes.map((node) => ({
+                        id: node.id,
+                        workflowId: id,
+                        name: node.type || "unknown",
+                        type: node.type as NodeType,
+                        position: node.position,
+                        data: node.data || {},
+                    }))
+                })
+
+                // create connections
+                await tx.connection.createMany({
+                    data: edges.map((edge) => ({
+                        workflowId: id,
+                        fromNodeId: edge.source,
+                        toNodeId: edge.target,
+                        fromOutput: edge.sourceHandle || "main",
+                        toInput: edge.targetHandle || "main",
+                    }))
+                })
+
+                // update workflow's updated at timestamp
+                await tx.workflow.update({
+                    where : { id },
+                    data : { updatedAt : new Date() }
+                })
+
+                return workflow;
+            })
+        }),
 
     getOne: protectedProcedure
         .input(z.object({ id: z.string() }))
-        .query(async({ ctx, input }) => {
+        .query(async ({ ctx, input }) => {
             const workflow = await prisma.workflow.findUniqueOrThrow({
                 where: {
                     id: input.id,
                     userId: ctx.auth.user.id
                 },
-                include : {
-                    nodes : true,
-                    connections : true
+                include: {
+                    nodes: true,
+                    connections: true
                 }
             })
 
             // Transforming server nodes to react-flow compatible node
-            const nodes : Node[] = workflow.nodes.map((node) => ({
-                id : node.id,
-                type : node.type,
-                position : node.position as {x : number, y : number} ,
-                data : (node.data as Record<string, unknown>  || {})
-            })) 
+            const nodes: Node[] = workflow.nodes.map((node) => ({
+                id: node.id,
+                type: node.type,
+                position: node.position as { x: number, y: number },
+                data: (node.data as Record<string, unknown> || {})
+            }))
 
             // Transforming server connections to react-flow compatible edge
-            const edges : Edge[] = workflow.connections.map((connection) => ({
+            const edges: Edge[] = workflow.connections.map((connection) => ({
                 id: connection.id,
                 source: connection.fromNodeId,
                 target: connection.toNodeId,
@@ -80,8 +152,8 @@ export const workflowsRouter = createTRPCRouter({
             }))
 
             return {
-                id : workflow.id,
-                name : workflow.name,
+                id: workflow.id,
+                name: workflow.name,
                 nodes,
                 edges
             }
@@ -90,40 +162,40 @@ export const workflowsRouter = createTRPCRouter({
     getMany: protectedProcedure
         .input(
             z.object({
-                page : z.number().default(PAGINATION.DEFAULT_PAGE),
-                pageSize : z
+                page: z.number().default(PAGINATION.DEFAULT_PAGE),
+                pageSize: z
                     .number()
                     .min(PAGINATION.MIN_PAGE_SIZE)
                     .max(PAGINATION.MAX_PAGE_SIZE)
                     .default(PAGINATION.DEFAULT_PAGE_SIZE),
-                search : z.string().default(""),
+                search: z.string().default(""),
             })
         )
-        .query(async({ ctx, input }) => {
+        .query(async ({ ctx, input }) => {
 
             const { page, pageSize, search } = input;
 
             const [items, totalCount] = await Promise.all([
                 prisma.workflow.findMany({
-                    skip : (page - 1) * pageSize,
-                    take : pageSize,
+                    skip: (page - 1) * pageSize,
+                    take: pageSize,
                     where: {
                         userId: ctx.auth.user.id,
-                        name : {
-                            contains : search,
-                            mode : "insensitive",
+                        name: {
+                            contains: search,
+                            mode: "insensitive",
                         }
                     },
-                    orderBy : {
-                        updatedAt : "desc"
+                    orderBy: {
+                        updatedAt: "desc"
                     }
                 }),
                 prisma.workflow.count({
                     where: {
                         userId: ctx.auth.user.id,
-                        name : {
-                            contains : search,
-                            mode : "insensitive",
+                        name: {
+                            contains: search,
+                            mode: "insensitive",
                         }
                     },
                 })
@@ -144,5 +216,5 @@ export const workflowsRouter = createTRPCRouter({
             }
         }),
 
-    
+
 })
