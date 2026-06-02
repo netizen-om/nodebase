@@ -78,10 +78,16 @@ export const Editor = (
                 onConnect={onConnect}
                 fitView
                 nodeTypes={nodeComponents}
+                onInit={setEditor}
+                // snapGrid={[10,10]}
+                // snapToGrid
+                panOnScroll
+                // panOnDrag={false}
+                // selectionOnDrag
                 proOptions={{
                     hideAttribution: true
                 }}
-                onInit={setEditor}
+
             >
                 <Background />
                 <Controls />
