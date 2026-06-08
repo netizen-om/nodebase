@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "inngest:dev": "inngest-cli@latest dev",
+    "inngest:dev": "inngest-cli dev",
     "dev:all": "mprocs",
     "start": "next start",
     "lint": "biome check",
