@@ -1,6 +1,9 @@
 import prisma from "@/lib/db";
 import { inngest } from "./client";
 import { NonRetriableError } from "inngest";
+import { topologicalSort } from "./utlis";
+import { NodeType } from "@/generated/prisma/enums";
+import { getExecuter } from "@/features/executions/lib/executor-registry";
 
 
 export const executeWorkflow = inngest.createFunction(
@@ -11,22 +14,42 @@ export const executeWorkflow = inngest.createFunction(
     // const workflowId = event.id
     const workflowId = event.data.workflowId;
 
-    if(!workflowId) {
+    if (!workflowId) {
       throw new NonRetriableError("WorkflowID missging")
     }
 
-    const nodes = await step.run("prepare-workflow", async() => {
+    const sortedNodes = await step.run("prepare-workflow", async () => {
       const workflow = await prisma.workflow.findUniqueOrThrow({
-        where : { id : workflowId },
+        where: { id: workflowId },
         include: {
-          nodes : true,
-          connections : true  
+          nodes: true,
+          connections: true
         }
       });
 
-      return workflow.nodes
+      return topologicalSort(workflow.nodes, workflow.connections)
     })
 
-    return { nodes, workflowId };
+    // Initialize the context with any initial data from the trigger
+    let context = event.data.initialData || {};
+
+    // Execute Each node
+    for(const node of  sortedNodes) {
+      const executer = getExecuter(node.type as NodeType);
+
+      context = await executer({
+        data : node.data as Record<string, unknown>,
+        nodeId : node.id,
+        context,
+        step,
+      })
+    }
+
+
+    return {
+      workflowId,
+      result: context,
+      
+    };
   },
 );
