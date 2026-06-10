@@ -33,6 +33,12 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 
 const formSchema = z.object({
+    variableName: z
+        .string()
+        .min(1, { message: "Variable name is required" })
+        .regex(/^[A-Za-z_$] [A-Za-z0-9_$]*$/, {
+            message: "Variable name must start with a letter or underscore and container only letters, numbers, and underscores",
+        }),
     endpoint: z.url({ message: "Please enter a valid URL" }),
     method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
     body: z
