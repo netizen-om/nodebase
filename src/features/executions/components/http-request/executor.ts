@@ -2,6 +2,7 @@ import type { NodeExecutor } from "@/features/executions/types";
 import { NonRetriableError } from "inngest";
 import ky, { type Options as KyOptions } from "ky"
 import Handlebars from "handlebars"
+import { httpRequestChannel } from "@/inngest/channels/httpRequest";
 
 Handlebars.registerHelper("json", (context) => {
     const jsonString = JSON.stringify(context, null, 2)
@@ -23,28 +24,56 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     nodeId,
     context,
     step,
+    publish,
 }) => {
-    // TODO : PUBLISH loading state for http request
+
+    await publish(
+        httpRequestChannel().status({
+            nodeId,
+            status: "loading"
+        })
+    )
 
     if (!data.endpoint) {
-        // TODO: publish error
+
+        await publish(
+            httpRequestChannel().status({
+                nodeId,
+                status: "error"
+            })
+        )
+
         throw new NonRetriableError("'HTTP Request node: No endpoint configured")
     }
 
     if (!data.variableName) {
-        // TODO: publish error
+
+        await publish(
+            httpRequestChannel().status({
+                nodeId,
+                status: "error"
+            })
+        )
+
         throw new NonRetriableError("'HTTP Request node: Variable name not configured")
     }
 
     if (!data.method) {
-        // TODO: publish error
+
+        await publish(
+            httpRequestChannel().status({
+                nodeId,
+                status: "error"
+            })
+        )
+
         throw new NonRetriableError("'HTTP Request node: Method not configured")
     }
 
     const result = await step.run("http-request", async () => {
 
         const endpoint = Handlebars.compile(data.endpoint)(context);
-        
+
         const method = data.method || "GET";
 
         const options: KyOptions = { method }
@@ -54,7 +83,7 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
             JSON.parse(resolved);
 
             console.log("BODY : ", resolved);
-            
+
 
             options.body = resolved;
             options.headers = {
@@ -76,14 +105,19 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
             },
         }
 
-            return {
-                ...context,
-                [data.variableName]: responsePayload
-            }
+        return {
+            ...context,
+            [data.variableName]: responsePayload
+        }
 
     })
 
-    // TODO : PUBLISH success state for http request
+    await publish(
+        httpRequestChannel().status({
+            nodeId,
+            status: "success"
+        })
+    )
 
     return result
 }
