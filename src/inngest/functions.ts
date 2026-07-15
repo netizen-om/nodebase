@@ -4,12 +4,23 @@ import { NonRetriableError } from "inngest";
 import { topologicalSort } from "./utlis";
 import { NodeType } from "@/generated/prisma/enums";
 import { getExecuter } from "@/features/executions/lib/executor-registry";
+import { httpRequestChannel } from "./channels/http-request";
+import { manualTrigerChannel } from "./channels/manual-trigger";
 
 
 export const executeWorkflow = inngest.createFunction(
-  { id: "execute-workflow" },
-  { event: "workflows/execute.workflow" },
-  async ({ event, step }) => {
+  {
+    id: "execute-workflow",
+    retries: 0
+  },
+  {
+    event: "workflows/execute.workflow",
+    channels: [
+      httpRequestChannel(),
+      manualTrigerChannel()
+    ],
+  },
+  async ({ event, step, publish }) => {
 
     // const workflowId = event.id
     const workflowId = event.data.workflowId;
@@ -34,14 +45,15 @@ export const executeWorkflow = inngest.createFunction(
     let context = event.data.initialData || {};
 
     // Execute Each node
-    for(const node of  sortedNodes) {
+    for (const node of sortedNodes) {
       const executer = getExecuter(node.type as NodeType);
 
       context = await executer({
-        data : node.data as Record<string, unknown>,
-        nodeId : node.id,
+        data: node.data as Record<string, unknown>,
+        nodeId: node.id,
         context,
         step,
+        publish,
       })
     }
 
