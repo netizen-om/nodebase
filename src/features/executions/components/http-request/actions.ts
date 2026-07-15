@@ -1,6 +1,6 @@
 "use server"
 
-import { httpRequestChannel } from "@/inngest/channels/httpRequest"
+import { httpRequestChannel } from "@/inngest/channels/http-request"
 import { inngest } from "@/inngest/client"
 import { type Realtime, getSubscriptionToken } from "@inngest/realtime"
 
