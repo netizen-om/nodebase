@@ -5,7 +5,8 @@ import { topologicalSort } from "./utlis";
 import { NodeType } from "@/generated/prisma/enums";
 import { getExecuter } from "@/features/executions/lib/executor-registry";
 import { httpRequestChannel } from "./channels/http-request";
-import { manualTrigerChannel } from "./channels/manual-trigger";
+import { manualTriggerChannel } from "./channels/manual-trigger";
+import { googleFormTriggerChannel } from "./channels/google-form-trigger";
 
 
 export const executeWorkflow = inngest.createFunction(
@@ -17,7 +18,9 @@ export const executeWorkflow = inngest.createFunction(
     event: "workflows/execute.workflow",
     channels: [
       httpRequestChannel(),
-      manualTrigerChannel()
+      manualTriggerChannel(),
+      googleFormTriggerChannel(),
+
     ],
   },
   async ({ event, step, publish }) => {

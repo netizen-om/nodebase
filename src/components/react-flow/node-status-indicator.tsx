@@ -62,7 +62,7 @@ export const BorderLoadingIndicator = ({
         </style>
         <div className={cn(
           "absolute inset-0 overflow-hidden rounded-sm",
-          className
+          className 
         )}>
           <div className="spinner rounded-full bg-[conic-gradient(from_0deg_at_50%_50%,rgb(42,67,233)_0deg,rgba(42,138,246,0)_360deg)]" />
         </div>
