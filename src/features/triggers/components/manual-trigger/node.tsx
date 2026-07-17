@@ -6,7 +6,7 @@ import { MousePointerIcon } from "lucide-react";
 import { ManualTriggerDialog } from "./dialog";
 import { useNodeStatus } from "@/features/executions/hooks/use-node-status";
 import { MANUAL_TRIGGER_CHANNEL_NAME } from "@/inngest/channels/manual-trigger";
-import { fetchManualTriggerTokenRealtimeToken } from "./actions";
+import { fetchManualTriggerRealtimeToken } from "./actions";
 
 export const ManualTriggerNode = memo((props: NodeProps) => {
 
@@ -16,7 +16,7 @@ export const ManualTriggerNode = memo((props: NodeProps) => {
         nodeId: props.id,
         channel: MANUAL_TRIGGER_CHANNEL_NAME,
         topic: "status",
-        refreshToken: fetchManualTriggerTokenRealtimeToken,
+        refreshToken: fetchManualTriggerRealtimeToken,
     });
 
 
