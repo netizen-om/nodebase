@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { CopyIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
+import { generateGoogleFormScript } from "./utlis";
 
 interface Props {
     open: boolean;
@@ -40,6 +41,7 @@ export const GoogleFormTriggerDialog = ({
             toast.error("Failed to copy Webhook URL");
         }
     }
+
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange} >
@@ -84,6 +86,54 @@ export const GoogleFormTriggerDialog = ({
                             <li>Save and click "Triggers" → Add Trigger</li>
                             <li>Choose: From form → On form submit → Save</li>
                         </ol>
+                    </div>
+
+                    <div className="rounded-lg bg-muted p-4 space-y-3">
+                        <h4 className="font-medium text-sm">Google Apps Script : </h4>
+                        <Button
+                            type="button"
+                            variant={"outline"}
+                            onClick={async () => {
+                                const script = generateGoogleFormScript(webhookUrl);
+                                try {
+                                    await navigator.clipboard.writeText(script)
+                                    toast.success("Google Apps Script copied to clipboard");
+                                } catch (error) {
+                                    toast.error("Failed to copy Google Apps Script");
+                                }
+                            }}
+                        >
+                            <CopyIcon className="size-4 mr-2" />
+                            Copy Google Apps Script
+                        </Button>
+                        <p className="text-xs text-muted-foreground">
+                            This script includes your webhook URL and
+                            handles form submissions
+                        </p>
+                    </div>
+
+                    <div className="rounded-lg bg-muted p-4 space-y-2">
+                            <h4 className="font-medium text-sm">Available Variables</h4>
+                            <ul className="text-sm text-muted-foreground space-y-1">
+                                <li>
+                                    <code className="bg-background px-1 py-0.5 rounded">
+                                        {"{{googleForm.respondentEmail}}"}
+                                    </code>
+                                    - Respondent's email
+                                </li>
+                                <li>
+                                    <code className="bg-background px-1 py-0.5 rounded">
+                                        {"{{googleForm.responses['Question Name']}}"}
+                                    </code>
+                                    - Specific answer
+                                </li>
+                                <li>
+                                    <code className="bg-background px-1 py-0.5 rounded">
+                                        {"{{json googleForm.responses}}"}
+                                    </code>
+                                    - All responses as JSOn
+                                </li>
+                            </ul>
                     </div>
 
                 </div>
