@@ -78,12 +78,6 @@ export const StripeTriggerDialog = ({
                     <div className="rounded-lg bg-muted p-4 space-y-2">
                         <h4 className="font-medium text-sm">Setup instructions</h4>
                         <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                            {/* <li>Open your Google Form</li>
-                            <li>Click the three dots menu → Script editor</li>
-                            <li>Copy and paste the script below</li>
-                            <li>Replace WEBHOOK_URL with your webhook URL above</li>
-                            <li>Save and click "Triggers" → Add Trigger</li>
-                            <li>Choose: From form → On form submit → Save</li> */}
                             <li>Open your Stripe Dashboard</li>
                             <li>Go to Developers → Webhooks</li>
                             <li>Click "Add endpoint"</li>
@@ -119,6 +113,12 @@ export const StripeTriggerDialog = ({
                                     {"{{json stripe}}"}
                                 </code>
                             - Full event data as JSON   
+                            </li>
+                            <li>
+                                <code className="bg-background px-1 py-0.5 rounded">
+                                    {"{{stripe.eventType}}"}
+                                </code>
+                                - Event type (e.g., payment_intent. succeeded)
                             </li>
                         </ul>
                     </div>
