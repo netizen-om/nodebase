@@ -4,15 +4,15 @@ import { BaseExecutionNode } from "@/features/executions/components/base-executi
 import { useReactFlow, type Node, type NodeProps, } from "@xyflow/react";
 import { memo, useState } from "react";
 import { useNodeStatus } from "../../hooks/use-node-status";
-import { HTTP_REQUEST_CHANNEL_NAME } from "@/inngest/channels/http-request";
-import { fetchHttpRequestRealtimeToken } from "./actions";
-import { GeminiDialog, GeminiFormValues } from "./dialog";
+import { AVAILABLE_MODELS, GeminiDialog, GeminiFormValues } from "./dialog";
+import { fetchGeminiRealtimeToken } from "./actions";
+import { GEMINI_CHANNEL_NAME } from "@/inngest/channels/gemini";
 
 type GeminiNodeData = {
     variableName?: string;
-    endpoint?: string;
-    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-    body?: string;
+    model?: string;
+    systemPrompt?: string;
+    userPrompt?: string;
 };
 
 type GeminiNodeType = Node<GeminiNodeData>;
@@ -24,14 +24,14 @@ export const GeminiNode = memo((props: NodeProps<GeminiNodeType>) => {
 
     const nodeStatus = useNodeStatus({
         nodeId: props.id,
-        channel: HTTP_REQUEST_CHANNEL_NAME,
+        channel: GEMINI_CHANNEL_NAME,
         topic: "status",
-        refreshToken: fetchHttpRequestRealtimeToken,
+        refreshToken: fetchGeminiRealtimeToken,
     });
 
     const nodeData = props.data;
-    const description = nodeData?.endpoint
-        ? `${nodeData.model || "GET"} : ${nodeData.endpoint}`
+    const description = nodeData?.userPrompt
+        ? `${nodeData.model || AVAILABLE_MODELS[0]} : ${nodeData.userPrompt.slice(0, 50)}...`
         : "Not configured"
 
     const handleOpenSettings = () => setDialogOpen(true);

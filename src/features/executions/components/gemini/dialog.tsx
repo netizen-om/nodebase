@@ -33,12 +33,13 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 
 
-const AVAILABLE_MODELS = [
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-8b",
-    "gemini-1.5-pro",
-    "gemini-1.0-pro",
-    "gemini-pro",
+export const AVAILABLE_MODELS = [
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
+    "gemini-3-flash-lite",
+    "gemini-3-flash",
+    "gemini-3-pro",
 ] as const;
 
 const formSchema = z.object({
@@ -48,7 +49,7 @@ const formSchema = z.object({
         .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, {
             message: "Variable name must start with a letter or underscore and container only letters, numbers, and underscores",
         }),
-    model: z.enum(AVAILABLE_MODELS),
+    model: z.string().min(1, "Model is required"),
     systemPrompt: z.string().optional(),
     userPrompt: z.string().min(1, "User prompt is required"),
 })
@@ -132,7 +133,7 @@ export const GeminiDialog = ({
                                 </FormItem>
                             )}
                         />
-                        
+
                         <FormField
                             control={form.control}
                             name="model"

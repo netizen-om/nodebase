@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.16",
-    "@ai-sdk/google": "^3.0.30",
+    "@ai-sdk/google": "^4.0.18",
     "@ai-sdk/openai": "^4.0.16",
     "@base-ui/react": "^1.1.0",
     "@hookform/resolvers": "^5.2.2",
@@ -54,7 +54,7 @@
     "@trpc/server": "^11.10.0",
     "@trpc/tanstack-react-query": "^11.10.0",
     "@xyflow/react": "^12.11.0",
-    "ai": "^6.0.97",
+    "ai": "^7.0.31",
     "better-auth": "^1.4.18",
     "class-variance-authority": "^0.7.1",
     "client-only": "^0.0.1",
